@@ -1,0 +1,30 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  artifacts:
+  - image: changeme
+    context: .
+    docker: {}
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/birds-of-a-feather/jx-atl:{{.VERSION}}'
+  local: {}
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  build:
+    artifacts:
+    - docker: {}
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/birds-of-a-feather/jx-atl:{{.DIGEST_HEX}}'
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: jx-atl
+        chartPath: charts/jx-atl
+        setValueTemplates:
+          image.repository: '{{.DOCKER_REGISTRY}}/birds-of-a-feather/jx-atl'
+          image.tag: '{{.DIGEST_HEX}}'
